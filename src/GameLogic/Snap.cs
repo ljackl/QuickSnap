@@ -3,7 +3,7 @@ using SwinGameSDK;
 
 #if DEBUG
 using NUnit.Framework;
-#endif 
+#endif
 
 
 namespace CardGames.GameLogic
@@ -37,6 +37,7 @@ namespace CardGames.GameLogic
 		public Snap ()
 		{
 			_deck = new Deck ();
+			_gameTimer = SwinGame.CreateTimer();
 		}
 
 		/// <summary>
@@ -92,9 +93,10 @@ namespace CardGames.GameLogic
 				_deck.Shuffle ();		// Return the cards and shuffle
 
 				FlipNextCard ();		// Flip the first card...
+				_gameTimer.Start();
 			}
 		}
-			
+
 		public void FlipNextCard()
 		{
 			if (_deck.CardsRemaining > 0)			// have cards...
@@ -111,7 +113,11 @@ namespace CardGames.GameLogic
 		/// </summary>
 		public void Update()
 		{
-			//TODO: implement update to automatically slip cards!
+			if (_gameTimer.Ticks > _flipTime)
+			{
+				_gameTimer.Reset();
+				FlipNextCard();
+			}
 		}
 
 		/// <summary>
@@ -121,7 +127,7 @@ namespace CardGames.GameLogic
 		public int Score(int idx)
 		{
 			if ( idx >= 0 && idx < _score.Length )
-				return _score[idx]; 
+				return _score[idx];
 			else
 				return 0;
 		}
@@ -138,13 +144,14 @@ namespace CardGames.GameLogic
 				 _topCards [0] != null && _topCards [0].Rank == _topCards [1].Rank) // and its a match
 			{
 				_score[player]++;
+				_gameTimer.Stop();
 				//TODO: consider playing a sound here...
 			}
 
 			// stop the game...
 			_started = false;
 		}
-	
+
 		#region Snap Game Unit Tests
 		#if DEBUG
 
@@ -174,8 +181,7 @@ namespace CardGames.GameLogic
 			}
 		}
 
-		#endif 
+		#endif
 		#endregion
 	}
 }
-
